@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Time Zone Day Comparison</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 p-6">
+  <h1 class="text-2xl font-bold mb-4">Time Zone Day Comparison</h1>
+  <p class="mb-4">This chart shows each time zone's typical day aligned by UTC hours.</p>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full border border-gray-300 text-sm table-fixed">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border border-gray-300 px-2 py-1 w-24">San Francisco</th>
+          <th class="border border-gray-300 px-2 py-1 w-24">New York</th>
+          <th class="border border-gray-300 px-2 py-1 w-24">London</th>
+          <th class="border border-gray-300 px-2 py-1 w-24">Berlin</th>
+          <th class="border border-gray-300 px-2 py-1 w-24">Tokyo</th>
+          <th class="border border-gray-300 px-2 py-1 w-24">Sydney</th>
+          <th class="border border-gray-300 px-2 py-1 w-24">Bali</th>
+        </tr>
+        <tr class="bg-gray-50 text-xs">
+          <td class="border border-gray-300 px-2 py-1">PST (UTC−8)</td>
+          <td class="border border-gray-300 px-2 py-1">EST (UTC−5)</td>
+          <td class="border border-gray-300 px-2 py-1">GMT (UTC±0)</td>
+          <td class="border border-gray-300 px-2 py-1">CET (UTC+1)</td>
+          <td class="border border-gray-300 px-2 py-1">JST (UTC+9)</td>
+          <td class="border border-gray-300 px-2 py-1">AEST (UTC+10)</td>
+          <td class="border border-gray-300 px-2 py-1">WITA (UTC+8)</td>
+        </tr>
+      </thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const timeZones = {
+      'San Francisco': -8,
+      'New York': -5,
+      'London': 0,
+      'Berlin': 1,
+      'Tokyo': 9,
+      'Sydney': 10,
+      'Bali': 8
+    };
+
+    const activities = [
+      { label: 'sleep', from: 23, to: 7, class: 'bg-rose-400 text-white' },
+      { label: 'breakfast', from: 7, to: 8, class: 'bg-orange-200' },
+      { label: 'available', from: 8, to: 18, class: 'bg-green-200' },
+      { label: 'dinner', from: 18, to: 19, class: 'bg-orange-200' },
+      { label: 'personal', from: 19, to: 23, class: 'bg-rose-200' }
+    ];
+
+    function getActivityAtLocalHour(hour) {
+      for (let a of activities) {
+        // Handle overnight activity (e.g., 23–7)
+        if (a.from > a.to) {
+          if (hour >= a.from || hour < a.to) return a;
+        } else {
+          if (hour >= a.from && hour < a.to) return a;
+        }
+      }
+      return { label: '', class: '' };
+    }
+
+    function formatHour(hour) {
+      return `${String(hour).padStart(2, '0')}:00`;
+    }
+
+    function buildTable() {
+      const tbody = document.getElementById('scheduleBody');
+      for (let utc = 0; utc < 24; utc++) {
+        const row = document.createElement('tr');
+
+        for (let label in timeZones) {
+          const offset = timeZones[label];
+          let localHour = (utc + offset + 24) % 24;
+          const activity = getActivityAtLocalHour(localHour);
+          const cell = document.createElement('td');
+          cell.textContent = `${formatHour(localHour)} – ${activity.label}`;
+          cell.className = `border border-gray-300 px-2 py-1 text-xs text-center ${activity.class}`;
+          row.appendChild(cell);
+        }
+
+        tbody.appendChild(row);
+      }
+    }
+
+    buildTable();
+  </script>
+</body>
+</html>
